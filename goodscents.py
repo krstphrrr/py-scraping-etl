@@ -11,6 +11,9 @@ def Merge(dict1, dict2):
     return dict1.update(dict2)
 
 def all_pages():
+    """
+    Compiles a list of workin links ( success code 200 ) of letter pages
+    """
     alphabet = string.ascii_lowercase
     link_list = [f"https://www.thegoodscentscompany.com/rawmatex-{letter}.html" for letter in alphabet]
     ok_link_list = []
@@ -28,6 +31,11 @@ def all_pages():
     return ok_link_list
 
 def all_chemical_pages_per_letter(url):
+    """
+    Using a letter page as an argument, compiles a dictionary of all available
+    links of individual chemicals in a letter page. The dictionary has chemical
+    names as keys, and the links as values.
+    """
     links_per_letter ={}
     session = requests.Session()
     session.headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
@@ -40,20 +48,24 @@ def all_chemical_pages_per_letter(url):
         links_per_letter[tag.string] = re.match(onclick_pattern, tag.attrs['onclick']).group('link')
     return links_per_letter
 
-full_df()
+df = full_df()
 def full_df():
+    """
+    This function will run all the other functions and concatenate each produced
+    dataframe row into a complete dataframe.
+    """
     list_of_pages = all_pages()
-    list_of_pages = list_of_pages[:3]
+    list_of_pages = list_of_pages[:10]
     chemical_links = {}
     dfs = []
 
     for link in list_of_pages:
-        print("ON LINK: ", link)
+        # print("ON LINK: ", link)
         temp_dict = all_chemical_pages_per_letter(link)
         Merge(chemical_links, temp_dict)
     if len(chemical_links.keys())>0:
         for chem in chemical_links.keys():
-            print("ON CHEMICAL: ", chem)
+            # print("ON CHEMICAL: ", chem)
             df = site_df(chemical_links[chem])
             dfs.append(df)
     if len(dfs)>0:
@@ -63,6 +75,9 @@ def full_df():
 
 
 def create_soup(url):
+    """
+    debugging function to quickly get back the html page of a url
+    """
     session = requests.Session()
     session.headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
     html = session.get(url).content
@@ -71,6 +86,11 @@ def create_soup(url):
     return soup
 
 def site_df(url):
+    """
+    Using the url of a single chemical, this function leverages beautifulsoup to
+    pull together the html tags of interest and store them in a dataframe of a
+    single row.
+    """
     session = requests.Session()
     session.headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
     html = session.get(url).content
