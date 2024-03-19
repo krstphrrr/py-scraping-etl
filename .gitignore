@@ -164,3 +164,4 @@ cython_debug/
 **/*.css
 **/debug.py
 **/f.html
+**/style.py
